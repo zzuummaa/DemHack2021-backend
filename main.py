@@ -14,7 +14,7 @@ def get_db():
 @app.route('/')
 def index():
     rows = get_db().query_db("""SELECT hello_string FROM test LIMIT 1""")
-    return {"message": str(rows[0][0])}
+    return {"message": str(rows[0][0]), "test_field": True}
 
 
 if __name__ == '__main__':

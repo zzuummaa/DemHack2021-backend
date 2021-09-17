@@ -41,7 +41,7 @@ def create_tables(cursor):
         )
     """)
     cursor.execute("""
-        INSERT INTO test (hello_string) VALUES ('Hello, Postgress 2!')
+        INSERT INTO test (hello_string) VALUES ('Hello, Postgress!')
         ON CONFLICT (hello_string) DO NOTHING;
     """)
 
