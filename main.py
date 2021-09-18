@@ -135,18 +135,53 @@ def add_action_internal(group_id, action):
     if "local_id" not in action or "type" not in action:
         raise RestApiError(message="Invalid request parameters", code=400)
 
-    # TODO db: create_action, return action_id
+    local_id = action["local_id"]
+    action_type = action["type"]
 
-    return 1
+    action_name = get_db().get_action_name_by_type(action_type)
+    if action_name is None:
+        raise RestApiError(message=f"Unknown action type: {action_type}", code=400)
+    elif action_name == 'action_vk_delete_posts':
+        if "post_ids" not in action:
+            print(action)
+            raise RestApiError(message="Invalid request parameters: need post_ids field to use action_vk_delete_posts", code=400)
+        get_db().add_action_vk_delete_post(group_id, local_id, action["post_ids"])
+    elif action_name == 'action_vk_delete_dialogs':
+        if "dialog_ids" not in action:
+            raise RestApiError(message="Invalid request parameters: need dialog_ids field to use action_vk_delete_dialogs",
+                               code=400)
+        get_db().action_vk_delete_dialogs(group_id, local_id, action["dialog_ids"])
+    else:
+        print('Not realized yet')
 
 
 def add_triggers_internal(group_id, trigger):
     if "local_id" not in trigger or "type" not in trigger:
         raise RestApiError(message="Invalid request parameters", code=400)
 
-    # TODO db: create_trigger, return trigger_id
+    local_id = trigger["local_id"]
+    trigger_type = trigger["type"]
 
-    return 1
+    trigger_name = get_db().get_trigger_name_by_type(trigger_type)
+    if trigger_name is None:
+        raise RestApiError(message=f"Unknown trigger type: {trigger_type}", code=400)
+    elif trigger_name == 'trigger_canary':
+        if "link" not in trigger:
+            raise RestApiError(message="Invalid request parameters: need link field to use trigger_canary",
+                               code=400)
+        get_db().add_trigger_canary(group_id, local_id, trigger["link"])
+    elif trigger_name == 'trigger_timer':
+        if "left_time" not in trigger:
+            raise RestApiError(message="Invalid request parameters: need left_time field to use trigger_timer",
+                               code=400)
+        get_db().add_trigger_timer(group_id, local_id, trigger["left_time"])
+    elif trigger_name == 'trigger_sms':
+        if "key_word" not in trigger:
+            raise RestApiError(message="Invalid request parameters: need key_word field to use trigger_sms",
+                               code=400)
+        get_db().add_trigger_sms(group_id, local_id, trigger["key_word"])
+    else:
+        print('Not realized yet')
 
 
 def get_static_groups():
@@ -157,56 +192,44 @@ def get_static_groups():
                 "name": "Группа 1",
                 "triggers": [
                     {
-                        "local_id": 1,
+                        "local_id": 0,
                         "type": 0,
-                        "specific_data": 1234,
-                        "specific_data2": 1234
+                        "link": "https://example.com/"
                     },
                     {
-                        "local_id": 2,
-                        "type": 3,
-                        "specific_data": "asdasd"
+                        "local_id": 1,
+                        "type": 1,
+                        "left_time": "48900"
                     }
                 ],
                 "actions": [
                     {
-                        "local_id": 1,
+                        "local_id": 0,
                         "type": 0,
-                        "specific_data": 1234
-                    },
-                    {
-                        "local_id": 2,
-                        "type": 3,
-                        "specific_data": "asdasd"
+                        "post_ids": [123, 124]
                     }
                 ]
             },
             {
                 "group_id": 2,
-                "name": "Группа 2",
+                "name": "Группа 2 (Особенная!)",
                 "triggers": [
+                    {
+                        "local_id": 0,
+                        "type": 2,
+                        "key_word": "my_super_secret_sms"
+                    },
                     {
                         "local_id": 1,
                         "type": 0,
-                        "specific_data": 1234,
-                        "specific_data2": 1234
-                    },
-                    {
-                        "local_id": 2,
-                        "type": 3,
-                        "specific_data": "asdasd"
+                        "link": "https://example.com"
                     }
                 ],
                 "actions": [
                     {
-                        "local_id": 1,
+                        "local_id": 0,
                         "type": 0,
-                        "specific_data": 1234
-                    },
-                    {
-                        "local_id": 2,
-                        "type": 3,
-                        "specific_data": "asdasd"
+                        "post_ids": [123, 124]
                     }
                 ]
             }
@@ -227,23 +250,22 @@ def add_group():
     if not request.is_json:
         return my_response(error="Body should contains JSON", code=400)
 
-    if "user_id" not in request.args \
+    if "user_id" not in request.json \
             or "name" not in request.json \
             or "actions" not in request.json \
             or "triggers" not in request.json:
         return my_response(error="Invalid request parameters", code=400)
 
-    user_id = request.args["user_id"]
+    user_id = request.json["user_id"]
     group_name = request.json["name"]
 
-    # TODO db: create_group
-    group_id = 1
+    group_id = get_db().create_new_group(group_name, user_id)
 
     for action in request.json["actions"]:
         add_action_internal(group_id, action)
 
     for trigger in request.json["triggers"]:
-        add_action_internal(group_id, trigger)
+        add_triggers_internal(group_id, trigger)
 
     return my_response({"group_id": group_id})
 
@@ -293,7 +315,7 @@ def add_trigger():
         return my_response(error="Invalid request parameters", code=400)
 
     group_id = request.args["group_id"]
-    action_id = add_action_internal(group_id, request.json)
+    action_id = add_triggers_internal(group_id, request.json)
 
     return my_response({"trigger_id": action_id})
 

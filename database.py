@@ -2,6 +2,9 @@ import psycopg2
 import uuid
 from flask import g
 
+import utils
+
+
 class DatabaseWrapper:
     def __init__(self, db):
         self.database = db
@@ -39,13 +42,42 @@ class DatabaseWrapper:
             (new_id, new_name))
         return new_id
 
+    def create_new_group(self, group_name, user_id):
+        new_group_id = self.query_db("select coalesce(max(id),0) from groups;")[0][0] + 1
+        self.insert_or_update_db(
+            """
+            insert into groups (id, name, user_id)
+            VALUES (%s, %s, %s);
+            """,
+            (new_group_id, group_name, user_id))
+        return new_group_id
+
+    def get_vk_token_by_group(self, group_id):
+        query_result = self.query_db(
+            """
+            SELECT user_id FROM groups WHERE id = %s;
+            """,
+            args=(group_id,))
+
+        if len(query_result) and len(query_result[0]):
+            return query_result[0][0]
+
+    def get_user_by_group(self, group_id):
+        query_result = self.query_db(
+            """
+            SELECT user_id FROM groups WHERE id = %s;
+            """,
+            args=(group_id,))
+
+        if len(query_result) and len(query_result[0]):
+            return query_result[0][0]
+
     def add_vk_api(self, user_id, vk_api):
         self.insert_or_update_db(
             """
             UPDATE users SET vk_api = %s WHERE id = %s;
             """,
             (vk_api, user_id))
-
 
     def get_vk_api(self, user_id):
         query_result = self.query_db(
@@ -56,6 +88,105 @@ class DatabaseWrapper:
 
         if len(query_result) and len(query_result[0]):
             return query_result[0][0]
+
+    def get_action_name_by_type(self, action_type):
+        query_result = self.query_db(
+            """
+            SELECT table_name FROM actions WHERE type = %s;
+            """,
+            args=(action_type,))
+
+        if len(query_result) and len(query_result[0]):
+            return query_result[0][0]
+
+    def get_trigger_name_by_type(self, trigger_type):
+        query_result = self.query_db(
+            """
+            SELECT table_name FROM triggers WHERE type = %s;
+            """,
+            args=(trigger_type,))
+
+        if len(query_result) and len(query_result[0]):
+            return query_result[0][0]
+
+    def get_all_post_ids_from_action_vk_delete_dialogs(self, group_id):
+        all_actions_in_db = self.query_db(
+            """
+            SELECT * FROM action_vk_delete_dialogs WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        dialog_ids = []
+
+        for _, _, row_dialog_ids in all_actions_in_db:
+            dialog_ids.append(row_dialog_ids.split(','))
+
+        return dialog_ids
+
+    def get_all_post_ids_from_action_vk_delete_posts(self, group_id):
+        all_actions_in_db = self.query_db(
+            """
+            SELECT * FROM action_vk_delete_posts WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        post_ids = []
+
+        for _, _, row_post_ids in all_actions_in_db:
+            post_ids.append(row_post_ids.split(','))
+
+        return post_ids
+
+    def action_vk_delete_dialogs(self, group_id, local_id, dialog_ids):
+        # Serrialize posts_ids array to string
+        dialog_ids_str = ",".join([str(post_id) for post_id in dialog_ids])
+
+        self.insert_or_update_db(
+            """
+            insert into action_vk_delete_dialogs (group_id, local_id, dialog_ids)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, dialog_ids_str))
+
+    def add_action_vk_delete_post(self, group_id, local_id, post_ids):
+        # Serrialize posts_ids array to string
+        post_ids_str = ",".join([str(post_id) for post_id in post_ids])
+
+        self.insert_or_update_db(
+            """
+            insert into action_vk_delete_posts (group_id, local_id, post_ids)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, post_ids_str))
+
+
+    def add_trigger_canary(self, group_id, local_id, link):
+        self.insert_or_update_db(
+            """
+            insert into trigger_canary (group_id, local_id, link)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, link))
+
+
+    def add_trigger_sms(self, group_id, local_id, key_word):
+        self.insert_or_update_db(
+            """
+            insert into trigger_sms (group_id, local_id, key_word)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, key_word))
+
+
+    def add_trigger_timer(self, group_id, local_id, left_time_seconds):
+        #TODO: Convert to str post_ids
+
+        self.insert_or_update_db(
+            """
+            insert into trigger_timer (group_id, local_id, expiration_dt)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, utils.get_timestamp_after_seconds(int(left_time_seconds))))
 
 
 def get_db():
@@ -83,4 +214,71 @@ def create_tables(cursor):
             id VARCHAR(128) PRIMARY KEY,
             name VARCHAR(128) NOT NULL,
             vk_api VARCHAR(128));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS groups (
+            id INTEGER PRIMARY KEY,
+            name VARCHAR(128) NOT NULL,
+            user_id VARCHAR(128) REFERENCES users);
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS triggers (
+            type INTEGER PRIMARY KEY,
+            table_name VARCHAR(128) NOT NULL);
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS trigger_canary(
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            link VARCHAR(128) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS trigger_timer(
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            expiration_dt TIMESTAMP NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS trigger_sms(
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            key_word VARCHAR(64) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS actions (
+            type INTEGER PRIMARY KEY,
+            table_name VARCHAR(128) NOT NULL);
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS action_vk_delete_post (
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            post_ids VARCHAR(1024) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS action_vk_delete_posts (
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            post_ids VARCHAR(1024) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS action_vk_delete_dialogs (
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            dialog_ids VARCHAR(1024) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
         """)
