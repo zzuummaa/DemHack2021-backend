@@ -11,10 +11,48 @@ def get_db():
     return db
 
 
+def my_response(content=None, error=None, code=200):
+    if content is None:
+        content = {}
+    content.update({"error": error, "is_ok": True if code == 200 else False})
+    return jsonify(content), code
+
+
 @app.route('/')
 def index():
     rows = get_db().query_db("""SELECT hello_string FROM test LIMIT 1""")
     return {"message": str(rows[0][0]), "test_field": True}
+
+
+@app.route('/users', methods=['POST'])
+def add_user():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "name" not in request.json:
+        return my_response(error="Invalid request parameters", code=400)
+
+    name = request.json["name"]
+
+    # TODO db
+
+    return my_response({'user_id': 1})
+
+
+@app.route('/vk_api', methods=['POST'])
+def add_vk_api():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "user_id" not in request.json or "vk_api_key" not in request.json:
+        return my_response(error="Invalid request parameters", code=400)
+
+    user_id = request.json["user_id"]
+    vk_api = request.json["vk_api_key"]
+
+    # TODO db
+
+    return my_response()
 
 
 if __name__ == '__main__':
