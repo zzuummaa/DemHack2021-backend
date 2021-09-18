@@ -1,5 +1,5 @@
 import vk_api
-from datetime import datetime
+from utils import *
 
 def validate_token(token):
     try:
@@ -21,7 +21,7 @@ def wall_to_posts(wall):
         posts.append({
             "id": post["id"],
             "title": post["text"],
-            "date": datetime.fromtimestamp(post["date"]).strftime("%Y-%m-%d %H:%M:%S")
+            "date": timestamp_to_string(post["date"])
         })
     return posts
 
