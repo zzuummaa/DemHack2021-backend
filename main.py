@@ -34,9 +34,9 @@ def add_user():
 
     name = request.json["name"]
 
-    # TODO db
+    new_user_id = get_db().create_new_user(name)
 
-    return my_response({'user_id': 1})
+    return my_response({'user_id': new_user_id})
 
 
 @app.route('/vk_api', methods=['POST'])

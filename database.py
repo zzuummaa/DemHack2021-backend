@@ -16,11 +16,25 @@ class DatabaseWrapper:
             return cur.rowcount
         return rv
 
+    def insert_db(self, query, args=()):
+        cur = self.database.cursor()
+        cur.execute(query, args)
+        self.database.commit()
+
     def execute(self, *args):
         return self.database.execute(args)
 
     def close(self):
         self.database.close()
+
+    def create_new_user(self, new_name):
+        new_id = self.query_db("select coalesce(max(id),0) from users;")[0][0] + 1
+        self.insert_db(
+            """
+            insert into users (id, name)
+            VALUES (%s, %s);
+            """, (new_id, new_name))
+        return new_id
 
 
 def connect():
@@ -35,13 +49,9 @@ def connect():
 
 
 def create_tables(cursor):
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS test (
-            hello_string varchar(256) PRIMARY KEY
-        )
-    """)
-    cursor.execute("""
-        INSERT INTO test (hello_string) VALUES ('Hello, Postgress!')
-        ON CONFLICT (hello_string) DO NOTHING;
-    """)
-
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id INT PRIMARY KEY,
+            name VARCHAR(128));
+        """)
