@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, request, g
+
+import vk_integration
 from database import *
+from vk_integration import *
 
 app = Flask(__name__)
 
@@ -49,6 +52,9 @@ def add_vk_api():
 
     user_id = request.json["user_id"]
     vk_api = request.json["vk_api_key"]
+
+    if not vk_integration.validate_token(vk_api):
+        return my_response(error="Invalid token", code=403)
 
     get_db().add_vk_api(user_id, vk_api)
 
