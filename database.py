@@ -1,6 +1,6 @@
 import psycopg2
 import uuid
-
+from flask import g
 
 class DatabaseWrapper:
     def __init__(self, db):
@@ -57,6 +57,12 @@ class DatabaseWrapper:
         if len(query_result) and len(query_result[0]):
             return query_result[0][0]
 
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = DatabaseWrapper(connect())
+    return db
 
 
 def connect():

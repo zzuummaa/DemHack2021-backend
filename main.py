@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request
 
 import vk_integration
 from database import *
@@ -21,13 +21,6 @@ def handle_rest_api_error(e):
 @app.errorhandler(psycopg2.Error)
 def handle_rest_api_error(e):
     return my_response(error=str(e.pgerror), code=500)
-
-
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = DatabaseWrapper(connect())
-    return db
 
 
 def my_response(content=None, error=None, code=200):
