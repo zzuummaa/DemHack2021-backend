@@ -47,6 +47,18 @@ class DatabaseWrapper:
             (vk_api, user_id))
 
 
+    def get_vk_api(self, user_id):
+        query_result = self.query_db(
+            """
+            SELECT vk_api FROM users WHERE id = %s;
+            """,
+            args=(user_id,))
+
+        if len(query_result) and len(query_result[0]):
+            return query_result[0][0]
+
+
+
 def connect():
     db = psycopg2.connect(
         database="postgres",
