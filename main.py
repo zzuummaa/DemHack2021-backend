@@ -50,7 +50,7 @@ def add_vk_api():
     user_id = request.json["user_id"]
     vk_api = request.json["vk_api_key"]
 
-    # TODO db
+    get_db().add_vk_api(user_id, vk_api)
 
     return my_response()
 
