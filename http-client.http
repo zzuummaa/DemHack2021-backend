@@ -24,3 +24,83 @@ GET http://{{url}}:80/vk_api/posts?user_id=1
 ###
 
 GET http://{{url}}:80/vk_api/messages?user_id=1
+
+###
+
+GET http://{{url}}:80/canary/link
+
+###
+
+POST http://{{url}}:80/groups?user_id=1
+Content-Type: application/json
+
+{
+  "name": "Группа 1",
+  "triggers": [
+    {
+      "local_id": 1,
+      "type": 0,
+      "specific_data": 1234,
+      "specific_data2": 1234
+    },
+    {
+      "local_id": 2,
+      "type": 3,
+      "specific_data": "asdasd"
+    }
+  ],
+  "actions": [
+    {
+      "local_id": 1,
+      "type": 0,
+      "specific_data": 1234
+    },
+    {
+      "local_id": 2,
+      "type": 3,
+      "specific_data": "asdasd"
+    }
+  ]
+}
+
+###
+
+GET http://{{url}}:80/groups?user_id=1
+
+###
+
+DELETE http://{{url}}:80/groups?group_id=1
+
+###
+
+POST http://{{url}}:80/actions?group_id=1
+Content-Type: application/json
+
+{
+  "local_id": 1,
+  "type": 0,
+  "specific_data": 1234,
+  "specific_data2": 1234
+}
+
+###
+
+DELETE http://{{url}}:80/actions?action_id=1
+Content-Type: application/json
+
+###
+
+POST http://{{url}}:80/triggers?group_id=1
+Content-Type: application/json
+
+{
+  "local_id": 1,
+  "type": 0,
+  "specific_data": 1234,
+  "specific_data2": 1234
+}
+
+###
+
+DELETE http://{{url}}:80/triggers?trigger_id=1
+Content-Type: application/json

@@ -7,6 +7,22 @@ from vk_integration import *
 app = Flask(__name__)
 
 
+class RestApiError(Exception):
+    def __init__(self, message, code):
+        super().__init__(message)
+        self.code = code
+
+
+@app.errorhandler(RestApiError)
+def handle_rest_api_error(e):
+    return my_response(error=str(e), code=e.code)
+
+
+@app.errorhandler(psycopg2.Error)
+def handle_rest_api_error(e):
+    return my_response(error=str(e.pgerror), code=500)
+
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -103,6 +119,205 @@ def get_messages():
             }
         ]
     })
+
+
+@app.route('/canary/link', methods=['GET'])
+def get_canary_link():
+    canary_id = uuid.uuid4().hex
+    return my_response({
+        "canary_id": canary_id,
+        "url": "http://45.134.255.15/canary/trigger?canary_id=" + canary_id
+    })
+
+
+@app.route('/canary/trigger', methods=['GET'])
+def trigger_canary_link():
+    if "canary_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    canary_id = request.args["canary_id"]
+
+    # TODO db: trigger group
+
+    return my_response()
+
+
+def add_action_internal(group_id, action):
+    if "local_id" not in action or "type" not in action:
+        raise RestApiError(message="Invalid request parameters", code=400)
+
+    # TODO db: create_action, return action_id
+
+    return 1
+
+
+def add_triggers_internal(group_id, trigger):
+    if "local_id" not in trigger or "type" not in trigger:
+        raise RestApiError(message="Invalid request parameters", code=400)
+
+    # TODO db: create_trigger, return trigger_id
+
+    return 1
+
+
+def get_static_groups():
+    return {
+        "groups": [
+            {
+                "group_id": 1,
+                "name": "Группа 1",
+                "triggers": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234,
+                        "specific_data2": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ],
+                "actions": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ]
+            },
+            {
+                "group_id": 2,
+                "name": "Группа 2",
+                "triggers": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234,
+                        "specific_data2": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ],
+                "actions": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ]
+            }
+        ]
+    }
+
+
+@app.route('/groups', methods=['GET'])
+def get_groups():
+    if "user_id" not in request.args:
+        raise RestApiError(message="Invalid request parameters", code=400)
+
+    return my_response(get_static_groups())
+
+
+@app.route('/groups', methods=['POST'])
+def add_group():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "user_id" not in request.args \
+    or "name" not in request.json \
+    or "actions" not in request.json \
+    or "triggers" not in request.json:
+        return my_response(error="Invalid request parameters", code=400)
+
+    user_id = request.args["user_id"]
+    group_name = request.json["name"]
+
+    # TODO db: create_group
+    group_id = 1
+
+    for action in request.json["actions"]:
+        add_action_internal(group_id, action)
+
+    for trigger in request.json["triggers"]:
+        add_action_internal(group_id, trigger)
+
+    return my_response({"group_id": group_id})
+
+
+@app.route('/groups', methods=['DELETE'])
+def delete_group():
+    if "group_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    # TODO db: remove_trigger()
+
+    return my_response()
+
+
+@app.route('/actions', methods=['POST'])
+def add_action():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "group_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    action_id = add_action_internal(group_id, request.json)
+
+    return my_response({"action_id": action_id})
+
+
+@app.route('/actions', methods=['DELETE'])
+def delete_action():
+    if "action_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    action_id = request.args["action_id"]
+    # TODO db: remove_action()
+
+    return my_response()
+
+
+@app.route('/triggers', methods=['POST'])
+def add_trigger():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "group_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    action_id = add_action_internal(group_id, request.json)
+
+    return my_response({"trigger_id": action_id})
+
+
+@app.route('/triggers', methods=['DELETE'])
+def delete_trigger():
+    if "trigger_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    trigger_id = request.args["trigger_id"]
+    # TODO db: remove_trigger()
+
+    return my_response()
 
 
 if __name__ == '__main__':
