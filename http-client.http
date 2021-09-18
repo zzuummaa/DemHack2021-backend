@@ -1,0 +1,26 @@
+POST http://{{url}}:80/users
+Content-Type: application/json
+
+{ "name":"Stepan" }
+
+###
+
+POST http://{{url}}:80/vk_api
+Content-Type: application/json
+
+{
+  "user_id" : "1",
+  "vk_api_key": "dwawdwad"
+}
+
+###
+
+GET http://{{url}}:80/vk_api/hook
+
+###
+
+GET http://{{url}}:80/vk_api/posts?user_id=1
+
+###
+
+GET http://{{url}}:80/vk_api/messages?user_id=1

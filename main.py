@@ -55,6 +55,50 @@ def add_vk_api():
     return my_response()
 
 
+@app.route('/vk_api/hook', methods=['GET'])
+def vk_api_hook():
+    return my_response({"message": "Вернитесь в приложение", "args": request.args})
+
+
+@app.route('/vk_api/posts', methods=['GET'])
+def get_posts():
+    if "user_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    user_id = request.args["user_id"]
+
+    # TODO vk_api
+    date = get_db().query_db("""select * from test_date""")[0][0]
+
+    return my_response({
+        'posts': [
+            {'id': 123, 'title': 'Мой пост 1', 'date': '2021-09-18 13:45:19'},
+            {'id': 123, 'title': 'Мой пост 2', 'date': '2021-11-10 23:11:00'}
+        ]
+    })
+
+
+@app.route('/vk_api/messages', methods=['GET'])
+def get_messages():
+    if "user_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    user_id = request.args["user_id"]
+
+    return my_response({
+        "messages": [
+            {
+                'id': 123,
+                'dialog_name': 'Валерий Клименко'
+            },
+            {
+                'id': 124,
+                'dialog_name': 'Степан Фоменко'
+            }
+        ]
+    })
+
+
 if __name__ == '__main__':
     conn = connect()
     cursor = conn.cursor()
