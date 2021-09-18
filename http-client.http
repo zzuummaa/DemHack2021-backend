@@ -89,6 +89,17 @@ Content-Type: application/json
 
 ###
 
+PUT http://{{url}}:80/actions?group_id=1&local_id=1
+Content-Type: application/json
+
+{
+  "type": 0,
+  "specific_data": 1234,
+  "specific_data2": 1234
+}
+
+###
+
 DELETE http://{{url}}:80/actions?action_id=1
 Content-Type: application/json
 
@@ -106,5 +117,18 @@ Content-Type: application/json
 
 ###
 
+PUT http://{{url}}:80/triggers?group_id=1&local_id=1
+Content-Type: application/json
+
+{
+  "local_id": 1,
+  "specific_data": 5678,
+  "specific_data2": 9012
+}
+
+###
+
 DELETE http://{{url}}:80/triggers?trigger_id=1
 Content-Type: application/json
+
+###

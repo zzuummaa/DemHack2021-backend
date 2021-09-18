@@ -24,6 +24,13 @@ def handle_rest_api_error(e):
     return my_response(error=str(e.pgerror), code=500)
 
 
+@app.errorhandler(vk_api.VkApiError)
+def handle_rest_api_error(e):
+    if isinstance(e, vk_api.ApiError):
+        return my_response(error="VK API: " + e.error["error_msg"], code=502)
+    return my_response(error="VK API: " + str(e), code=500)
+
+
 def my_response(content=None, error=None, code=200):
     if content is None:
         content = {}
@@ -274,6 +281,22 @@ def add_action():
     return my_response({"action_id": action_id})
 
 
+@app.route('/actions', methods=['PUT'])
+def update_action():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "group_id" not in request.args or "local_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    local_id = request.args["local_id"]
+
+    # TODO update fields, such is present in json
+
+    return my_response()
+
+
 @app.route('/actions', methods=['DELETE'])
 def delete_action():
     if "action_id" not in request.args:
@@ -297,6 +320,22 @@ def add_trigger():
     action_id = add_trigger_internal(group_id, request.json)
 
     return my_response({"trigger_id": action_id})
+
+
+@app.route('/triggers', methods=['PUT'])
+def update_trigger():
+    if not request.is_json:
+        return my_response(error="Body should contains JSON", code=400)
+
+    if "group_id" not in request.args or "local_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    local_id = request.args["local_id"]
+
+    # TODO update fields, such is present in json
+
+    return my_response()
 
 
 @app.route('/triggers', methods=['DELETE'])
