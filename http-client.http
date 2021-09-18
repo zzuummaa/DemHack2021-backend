@@ -65,6 +65,14 @@ Content-Type: application/json
 
 ###
 
+GET http://{{url}}:80/groups?user_id=1
+
+###
+
+DELETE http://{{url}}:80/groups?group_id=1
+
+###
+
 POST http://{{url}}:80/actions?group_id=1
 Content-Type: application/json
 
@@ -77,6 +85,11 @@ Content-Type: application/json
 
 ###
 
+DELETE http://{{url}}:80/actions?action_id=1
+Content-Type: application/json
+
+###
+
 POST http://{{url}}:80/triggers?group_id=1
 Content-Type: application/json
 
@@ -86,3 +99,8 @@ Content-Type: application/json
   "specific_data": 1234,
   "specific_data2": 1234
 }
+
+###
+
+DELETE http://{{url}}:80/triggers?trigger_id=1
+Content-Type: application/json

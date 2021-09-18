@@ -160,6 +160,79 @@ def add_triggers_internal(group_id, trigger):
     return 1
 
 
+def get_static_groups():
+    return {
+        "groups": [
+            {
+                "group_id": 1,
+                "name": "Группа 1",
+                "triggers": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234,
+                        "specific_data2": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ],
+                "actions": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ]
+            },
+            {
+                "group_id": 2,
+                "name": "Группа 2",
+                "triggers": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234,
+                        "specific_data2": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ],
+                "actions": [
+                    {
+                        "local_id": 1,
+                        "type": 0,
+                        "specific_data": 1234
+                    },
+                    {
+                        "local_id": 2,
+                        "type": 3,
+                        "specific_data": "asdasd"
+                    }
+                ]
+            }
+        ]
+    }
+
+
+@app.route('/groups', methods=['GET'])
+def get_groups():
+    if "user_id" not in request.args:
+        raise RestApiError(message="Invalid request parameters", code=400)
+
+    return my_response(get_static_groups())
+
+
 @app.route('/groups', methods=['POST'])
 def add_group():
     if not request.is_json:
@@ -186,6 +259,17 @@ def add_group():
     return my_response({"group_id": group_id})
 
 
+@app.route('/groups', methods=['DELETE'])
+def delete_group():
+    if "group_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    group_id = request.args["group_id"]
+    # TODO db: remove_trigger()
+
+    return my_response()
+
+
 @app.route('/actions', methods=['POST'])
 def add_action():
     if not request.is_json:
@@ -200,6 +284,17 @@ def add_action():
     return my_response({"action_id": action_id})
 
 
+@app.route('/actions', methods=['DELETE'])
+def delete_action():
+    if "action_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    action_id = request.args["action_id"]
+    # TODO db: remove_action()
+
+    return my_response()
+
+
 @app.route('/triggers', methods=['POST'])
 def add_trigger():
     if not request.is_json:
@@ -212,6 +307,17 @@ def add_trigger():
     action_id = add_action_internal(group_id, request.json)
 
     return my_response({"trigger_id": action_id})
+
+
+@app.route('/triggers', methods=['DELETE'])
+def delete_trigger():
+    if "trigger_id" not in request.args:
+        return my_response(error="Invalid request parameters", code=400)
+
+    trigger_id = request.args["trigger_id"]
+    # TODO db: remove_trigger()
+
+    return my_response()
 
 
 if __name__ == '__main__':
