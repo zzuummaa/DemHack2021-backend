@@ -1,4 +1,5 @@
 import vk_api
+from datetime import datetime
 
 def validate_token(token):
     try:
@@ -11,13 +12,23 @@ def validate_token(token):
         return False
 
 
-def get_posts(token):
-    try:
-        vk = vk_api.VkApi(token=token).get_api()
-        print(vk.wall.get())
-        return True
-    except:
-        return None
+def wall_to_posts(wall):
+    posts = []
+    if "items" not in wall:
+        return posts
+
+    for post in wall["items"]:
+        posts.append({
+            "id": post["id"],
+            "title": post["text"],
+            "date": datetime.fromtimestamp(post["date"]).strftime("%Y-%m-%d %H:%M:%S")
+        })
+    return posts
+
+
+def get_wall(token):
+    vk = vk_api.VkApi(token=token).get_api()
+    return vk.wall.get()
     # return my_response({
     #     'posts': [
     #         {'id': 123, 'title': 'Мой пост 1', 'date': '2021-09-18 13:45:19'},
@@ -26,4 +37,4 @@ def get_posts(token):
     # })
 #
 if __name__ == '__main__':
-    print(get_posts('d98c31da692d0cc01d6130144fae15a28b6af879097b9a9cdf92e4802ce398c2d7f34ffe0949d563f5a55'))
+    print(wall_to_posts(get_wall('f1c75b295180b27e469520bf90d69182f1db76d9f758f773407b9e3afb377d14b130000e7ec16ae65edf3')))

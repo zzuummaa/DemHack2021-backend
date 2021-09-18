@@ -19,7 +19,7 @@ GET http://{{url}}:80/vk_api/hook
 
 ###
 
-GET http://{{url}}:80/vk_api/posts?user_id=1
+GET http://{{url}}:80/vk_api/posts?user_id=36894d64220849be89263aa02e332af4
 
 ###
 
@@ -28,6 +28,10 @@ GET http://{{url}}:80/vk_api/messages?user_id=1
 ###
 
 GET http://{{url}}:80/canary/link
+
+###
+
+GET http://{{url}}:80/canary/trigger?canary_id
 
 ###
 
