@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 import vk_integration
 from database import *
 from vk_integration import *
+from timer_api import *
 
 app = Flask(__name__)
 
@@ -140,7 +141,7 @@ def add_action_internal(group_id, action):
     return 1
 
 
-def add_triggers_internal(group_id, trigger):
+def add_trigger_internal(group_id, trigger):
     if "local_id" not in trigger or "type" not in trigger:
         raise RestApiError(message="Invalid request parameters", code=400)
 
@@ -243,7 +244,7 @@ def add_group():
         add_action_internal(group_id, action)
 
     for trigger in request.json["triggers"]:
-        add_action_internal(group_id, trigger)
+        add_trigger_internal(group_id, trigger)
 
     return my_response({"group_id": group_id})
 
@@ -293,7 +294,7 @@ def add_trigger():
         return my_response(error="Invalid request parameters", code=400)
 
     group_id = request.args["group_id"]
-    action_id = add_action_internal(group_id, request.json)
+    action_id = add_trigger_internal(group_id, request.json)
 
     return my_response({"trigger_id": action_id})
 
@@ -310,6 +311,8 @@ def delete_trigger():
 
 
 if __name__ == '__main__':
+    timer_loop.start()
+
     conn = connect()
     cursor = conn.cursor()
     create_tables(cursor)
