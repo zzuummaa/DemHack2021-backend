@@ -1,17 +1,24 @@
 import logging
 import signal
 
+import psycopg2
+
+from actions_processor import check_trigger_timers
+
 from timeloop import Timeloop
 from datetime import timedelta
+from database import connect, DatabaseWrapper
 
 
 timer_loop = Timeloop()
 logging.getLogger('timeloop').setLevel(logging.ERROR)
 
+db = DatabaseWrapper(connect())
+
 
 @timer_loop.job(interval=timedelta(seconds=5))
 def timer_task():
-    # TODO check triggers
+    check_trigger_timers(db)
     pass
 
 

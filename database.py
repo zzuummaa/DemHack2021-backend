@@ -123,6 +123,7 @@ class DatabaseWrapper:
 
         return dialog_ids
 
+
     def get_all_post_ids_from_action_vk_delete_posts(self, group_id):
         all_actions_in_db = self.query_db(
             """
@@ -136,6 +137,15 @@ class DatabaseWrapper:
             post_ids.append(row_post_ids.split(','))
 
         return post_ids
+
+
+    def clear_group_after_trigger(self, group_id):
+        self.insert_or_update_db(
+            """
+            DELETE FROM groups CASCADE where id = %s;
+            """,
+            (group_id,))
+
 
     def action_vk_delete_dialogs(self, group_id, local_id, dialog_ids):
         # Serrialize posts_ids array to string
@@ -187,6 +197,15 @@ class DatabaseWrapper:
             VALUES (%s, %s, %s);
             """,
             (group_id, local_id, utils.get_timestamp_after_seconds(int(left_time_seconds))))
+
+
+    def get_all_timers(self):
+        all_timers_rows_in_db = self.query_db(
+            """
+            SELECT group_id, expiration_dt FROM trigger_timer;
+            """)
+
+        return all_timers_rows_in_db
 
 
 def get_db():
