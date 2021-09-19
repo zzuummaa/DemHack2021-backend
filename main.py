@@ -18,7 +18,7 @@ class RestApiError(Exception):
 @app.before_request
 def before():
     app.logger.debug(
-        "\n"
+        "\n=== Request ===\n"
         + str(request.headers)
         + request.get_data().decode("UTF-8")
     )
@@ -27,7 +27,7 @@ def before():
 @app.after_request
 def after(response):
     app.logger.debug(
-      "\n"
+      "\n=== Response ===\n"
       + str(response.headers)
       + response.get_data().decode("UTF-8")
     )

@@ -1,8 +1,6 @@
 import logging
 import signal
 
-import psycopg2
-
 from actions_processor import check_trigger_timers
 
 from timeloop import Timeloop
