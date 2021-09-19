@@ -17,8 +17,7 @@ def start_command(message):
 
     nickname = message.from_user.username
 
-    # TODO get_groups_by_telegram_nickname(nickname)
-    groups = [{"name": "Vasia", "id": 123}]
+    groups = db.get_groups_by_telegram_nickname(nickname)
 
     button_list = []
     for group in groups:
@@ -31,8 +30,9 @@ def start_command(message):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
     nickname = call.from_user.username
-    # TODO groups = get_groups_by_telegram_nickname(nickname)
-    groups = []
+
+    groups = db.get_groups_by_telegram_nickname(nickname)
+
     for group in groups:
         process_group_triggered(db, group["id"])
 

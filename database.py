@@ -139,6 +139,28 @@ class DatabaseWrapper:
         return dialog_ids
 
 
+    def get_groups_by_telegram_nickname(self, nickname_to_find):
+        all_trigger_telegram_rows = self.query_db(
+            """
+            SELECT group_id, g.name, nicknames 
+            FROM trigger_telegram 
+            LEFT JOIN groups g on g.id = trigger_telegram.group_id;
+            """)
+
+        group_ids = []
+
+        for group_id, group_name, nicknames in all_trigger_telegram_rows:
+            for nickname in nicknames.split(','):
+                if nickname_to_find == nickname:
+                    group_ids.append({
+                        "id" : group_id,
+                        "name": group_name
+                    })
+
+        return group_ids
+
+
+
     def get_all_post_ids_from_action_vk_delete_posts(self, group_id):
         all_actions_in_db = self.query_db(
             """
