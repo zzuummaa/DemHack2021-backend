@@ -35,7 +35,7 @@ def clear_wall(token, post_ids):
     response = []
     vk = vk_api.VkApi(token=token).get_api()
     for post_id in post_ids:
-        response.append(vk.wall.delete(post_id=int(post_id))
+        response.append(vk.wall.delete(post_id=int(post_id)))
 
     return response
 
