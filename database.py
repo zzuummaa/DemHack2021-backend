@@ -62,6 +62,21 @@ class DatabaseWrapper:
         if len(query_result) and len(query_result[0]):
             return query_result[0][0]
 
+
+    def get_groups_by_user(self, user_id):
+        query_result = self.query_db(
+            """
+            SELECT id, name FROM groups WHERE user_id = %s;
+            """,
+            args=(user_id,))
+
+        groups_ids_with_name = []
+
+        for group_id, group_name in query_result:
+            groups_ids_with_name.append((group_id, group_name))
+
+        return groups_ids_with_name
+
     def get_user_by_group(self, group_id):
         query_result = self.query_db(
             """
@@ -145,6 +160,73 @@ class DatabaseWrapper:
             DELETE FROM groups CASCADE where id = %s;
             """,
             (group_id,))
+
+
+    def get_action_vk_delete_dialogs(self, group_id):
+        all_actions_in_db = self.query_db(
+            """
+            SELECT local_id, dialog_ids FROM action_vk_delete_dialogs WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        res = []
+        for local_id, dialog_ids_str in all_actions_in_db:
+            res.append((local_id, dialog_ids_str.split(',')))
+        return res
+
+
+    def get_trigger_sms(self, group_id):
+        all_trigger_sms_in_db = self.query_db(
+            """
+            SELECT local_id, key_word FROM trigger_sms WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        res = []
+        for local_id, key_word in all_trigger_sms_in_db:
+            res.append((local_id, key_word))
+
+        return res
+
+
+    def get_trigger_canary(self, group_id):
+        all_canary_in_db = self.query_db(
+            """
+            SELECT local_id, link FROM trigger_canary WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        res = []
+        for local_id, link in all_canary_in_db:
+            res.append((local_id, link))
+
+        return res
+
+    def get_trigger_timer(self, group_id):
+        all_timers_in_db = self.query_db(
+            """
+            SELECT local_id, expiration_dt FROM trigger_timer WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        res = []
+        for local_id, expiration_dt in all_timers_in_db:
+            res.append((local_id, utils.get_seconds_till_timestamp(expiration_dt)))
+
+        return res
+
+    def get_action_vk_delete_posts(self, group_id):
+        all_actions_in_db = self.query_db(
+            """
+            SELECT local_id, post_ids FROM action_vk_delete_posts WHERE group_id = %s;
+            """,
+            (group_id,))
+
+        res = []
+        for local_id, post_ids_str in all_actions_in_db:
+            res.append((local_id, post_ids_str.split(',')))
+
+        return res
 
 
     def action_vk_delete_dialogs(self, group_id, local_id, dialog_ids):

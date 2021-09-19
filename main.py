@@ -192,6 +192,68 @@ def add_trigger_internal(group_id, trigger):
         print('Not realized yet')
 
 
+def get_actions_by_group(group_id):
+    actions = []
+
+    for local_id, post_ids in get_db().get_action_vk_delete_posts(group_id):
+        actions.append({
+            "local_id": local_id,
+            "type": 0,
+            "post_ids": post_ids
+        })
+
+    for local_id, dialog_ids in get_db().get_action_vk_delete_dialogs(group_id):
+        actions.append({
+            "local_id": local_id,
+            "type": 1,
+            "dialog_ids": dialog_ids
+        })
+
+    return actions
+
+def get_triggers_by_group(group_id):
+    triggers = []
+
+    for local_id, link in get_db().get_trigger_canary(group_id):
+        triggers.append({
+            "local_id": local_id,
+            "type": 0,
+            "link": link
+        })
+
+    for local_id, seconds_till_exp in get_db().get_trigger_timer(group_id):
+        triggers.append({
+            "local_id": local_id,
+            "type": 1,
+            "left_time": seconds_till_exp
+        })
+
+    for local_id, key_word in get_db().get_trigger_sms(group_id):
+        triggers.append({
+            "local_id": local_id,
+            "type": 2,
+            "key_word": key_word
+        })
+
+    return triggers
+
+def get_groups_by_user(user_id):
+    groups = []
+
+    for group_id, group_name in get_db().get_groups_by_user(user_id):
+        groups.append({
+            "group_id": group_id,
+            "name": group_name,
+            "triggers": get_triggers_by_group(group_id),
+            "actions": get_actions_by_group(group_id)
+        })
+
+    result = dict()
+    result["groups"] = groups
+
+    return result
+
+
 def get_static_groups():
     return {
         "groups": [
@@ -250,7 +312,7 @@ def get_groups():
     if "user_id" not in request.args:
         raise RestApiError(message="Invalid request parameters", code=400)
 
-    return my_response(get_static_groups())
+    return my_response(get_groups_by_user(request.args["user_id"]))
 
 
 @app.route('/groups', methods=['POST'])
