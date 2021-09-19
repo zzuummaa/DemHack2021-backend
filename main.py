@@ -427,9 +427,6 @@ def request_triggers_by_group():
 
 @app.route('/actions', methods=['GET'])
 def request_actions_by_group():
-    if not request.is_json:
-        return my_response(error="Body should contains JSON", code=400)
-
     if "group_id" not in request.args:
         return my_response(error="Invalid request parameters", code=400)
 
@@ -440,9 +437,6 @@ def request_actions_by_group():
 
 @app.route('/triggers', methods=['POST'])
 def add_trigger():
-    if not request.is_json:
-        return my_response(error="Body should contains JSON", code=400)
-
     if "group_id" not in request.args:
         return my_response(error="Invalid request parameters", code=400)
 
