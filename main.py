@@ -15,6 +15,25 @@ class RestApiError(Exception):
         self.code = code
 
 
+@app.before_request
+def before():
+    app.logger.debug(
+        "\n"
+        + str(request.headers)
+        + request.get_data().decode("UTF-8")
+    )
+
+
+@app.after_request
+def after(response):
+    app.logger.debug(
+      "\n"
+      + str(response.headers)
+      + response.get_data().decode("UTF-8")
+    )
+    return response
+
+
 @app.errorhandler(RestApiError)
 def handle_rest_api_error(e):
     return my_response(error=str(e), code=e.code)
