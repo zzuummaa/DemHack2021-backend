@@ -21,3 +21,7 @@ def check_trigger_timers(db):
     for group_id, expiration_dt in db.get_all_timers():
         if datetime.now() > expiration_dt:
             process_group_triggered(db, group_id)
+
+def canary_triggered(db, canary_code):
+    for group_id in db.get_groups_by_canary_code(canary_code):
+        process_group_triggered(db, group_id)

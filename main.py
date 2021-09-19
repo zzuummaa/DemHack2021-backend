@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 
 import vk_integration
+from actions_processor import canary_triggered
 from database import *
 from vk_integration import *
 from timer_api import *
@@ -123,7 +124,7 @@ def get_canary_link():
     canary_id = uuid.uuid4().hex
     return my_response({
         "canary_id": canary_id,
-        "url": "http://45.134.255.15/canary/trigger?canary_id=" + canary_id
+        "url": get_canary_link_from_code(canary_id)
     })
 
 
@@ -134,7 +135,7 @@ def trigger_canary_link():
 
     canary_id = request.args["canary_id"]
 
-    # TODO db: trigger group
+    canary_triggered(get_db(), canary_id)
 
     return my_response()
 

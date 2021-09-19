@@ -189,6 +189,20 @@ class DatabaseWrapper:
         return res
 
 
+    def get_groups_by_canary_code(self, canary_code):
+        all_canary_in_db = self.query_db(
+            """
+            SELECT group_id FROM trigger_canary WHERE link = %s;
+            """,
+            (canary_code,))
+
+        res = []
+        for group_id, in all_canary_in_db:
+            res.append(group_id)
+
+        return res
+
+
     def get_trigger_canary(self, group_id):
         all_canary_in_db = self.query_db(
             """
@@ -198,7 +212,7 @@ class DatabaseWrapper:
 
         res = []
         for local_id, link in all_canary_in_db:
-            res.append((local_id, link))
+            res.append((local_id, utils.get_canary_link_from_code(link)))
 
         return res
 
@@ -258,7 +272,7 @@ class DatabaseWrapper:
             insert into trigger_canary (group_id, local_id, link)
             VALUES (%s, %s, %s);
             """,
-            (group_id, local_id, link))
+            (group_id, local_id, utils.get_code_from_canary(link)))
 
 
     def add_trigger_sms(self, group_id, local_id, key_word):
@@ -351,6 +365,14 @@ def create_tables(cursor):
             group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
             local_id INTEGER NOT NULL,
             key_word VARCHAR(64) NOT NULL,
+            PRIMARY KEY (group_id, local_id));
+        """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS trigger_telegram(
+            group_id INTEGER NOT NULL REFERENCES groups ON DELETE CASCADE,
+            local_id INTEGER NOT NULL,
+            nicknames VARCHAR(1024) NOT NULL,
             PRIMARY KEY (group_id, local_id));
         """)
     cursor.execute(
