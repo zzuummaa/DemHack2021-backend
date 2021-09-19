@@ -41,6 +41,6 @@ def clear_wall(token, post_ids):
 
 
 if __name__ == '__main__':
-    token = 'f1c75b295180b27e469520bf90d69182f1db76d9f758f773407b9e3afb377d14b130000e7ec16ae65edf3'
+    token = '94f917c4e2882f05c7c5ea0c4a767f30a0f121ec38d441903f63059431b244af34f8ba7ebe6ef5d80ca48'
     print(wall_to_posts(get_wall(token)))
-    print(clear_wall(token, [2]))
+    print(clear_wall(token, [7]))

@@ -149,7 +149,8 @@ class DatabaseWrapper:
         post_ids = []
 
         for _, _, row_post_ids in all_actions_in_db:
-            post_ids.append(row_post_ids.split(','))
+            for post_id in  row_post_ids.split(','):
+                post_ids.append(post_id)
 
         return post_ids
 
