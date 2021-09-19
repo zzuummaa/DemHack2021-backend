@@ -419,9 +419,6 @@ def delete_action():
 
 @app.route('/triggers', methods=['GET'])
 def request_triggers_by_group():
-    if not request.is_json:
-        return my_response(error="Body should contains JSON", code=400)
-
     if "group_id" not in request.args:
         return my_response(error="Invalid request parameters", code=400)
 
