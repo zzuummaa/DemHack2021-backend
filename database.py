@@ -307,6 +307,15 @@ class DatabaseWrapper:
             (group_id, local_id, key_word))
 
 
+    def add_trigger_telegram(self, group_id, local_id, nicknames):
+        self.insert_or_update_db(
+            """
+            insert into trigger_telegram (group_id, local_id, nicknames)
+            VALUES (%s, %s, %s);
+            """,
+            (group_id, local_id, nicknames))
+
+
     def add_trigger_timer(self, group_id, local_id, left_time_seconds):
         #TODO: Convert to str post_ids
 

@@ -208,6 +208,11 @@ def add_trigger_internal(group_id, trigger):
             raise RestApiError(message="Invalid request parameters: need key_word field to use trigger_sms",
                                code=400)
         get_db().add_trigger_sms(group_id, local_id, trigger["key_word"])
+    elif trigger_name == 'trigger_telegram':
+        if "nicknames" not in trigger:
+            raise RestApiError(message="Invalid request parameters: need nicknames field to use trigger_telegram",
+                               code=400)
+        get_db().add_trigger_telegram(group_id, local_id, trigger["nicknames"])
     else:
         print('Not realized yet')
 
