@@ -413,7 +413,7 @@ def delete_action():
 
 
 @app.route('/triggers', methods=['GET'])
-def add_trigger():
+def request_triggers_by_group():
     if not request.is_json:
         return my_response(error="Body should contains JSON", code=400)
 
@@ -426,7 +426,7 @@ def add_trigger():
 
 
 @app.route('/actions', methods=['GET'])
-def add_trigger():
+def request_actions_by_group():
     if not request.is_json:
         return my_response(error="Body should contains JSON", code=400)
 
