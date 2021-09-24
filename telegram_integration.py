@@ -6,7 +6,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from actions_processor import process_group_triggered
 from database import DatabaseWrapper, connect
 
-bot = telebot.TeleBot('2002969475:AAEN_DJ6RZ1b3n5u2tZ8Zay61ZpGJ8xb5pU', threaded=False)
+bot = telebot.TeleBot('xxxxxxxxxxxxxxxxxxxxxxxxx', threaded=False)
 
 db = DatabaseWrapper(connect())
 
